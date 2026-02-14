@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: traefik
+
+resources:
+  - namespace.yaml
+  - tlsstore.yaml
+  - traefik-conf.yaml
+  - gateway.yaml
+
+helmCharts:
+  - name: traefik
+    repo: https://traefik.github.io/charts
+    version: 39.0.0  # Update to desired version
+    releaseName: traefik
+    valuesFile: values.yaml
+    includeCRDs: true

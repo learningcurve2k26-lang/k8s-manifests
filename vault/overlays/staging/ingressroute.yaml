@@ -1,0 +1,42 @@
+# Traefik IngressRoute for Vault UI
+# Adjust domain according to your setup
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: vault-ui
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: ingress
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - match: Host(`vault.kitetsu.xyz`)
+      kind: Rule
+      services:
+        - name: vault-ui
+          port: 8200
+      middlewares: []
+  tls:
+    secretName: kitetsu-tls  # Your TLS certificate secret
+---
+# HTTP to HTTPS redirect
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: vault-ui-http
+  namespace: vault
+spec:
+  entryPoints:
+    - web
+  routes:
+    - match: Host(`vault.kitetsu.xyz`)
+      kind: Rule
+      services:
+        - name: vault-ui
+          port: 8200
+      middlewares:
+        - name: https-redirect
+          namespace: traefik

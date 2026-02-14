@@ -1,0 +1,140 @@
+# Cilium Helm Values
+# Reference: https://github.com/cilium/cilium/tree/main/install/kubernetes/cilium
+#
+# IMPORTANT: This configuration is for clusters where nodes are NOT pre-tainted
+# with node.cilium.io/agent-not-ready. The agent will manage taints dynamically.
+
+# -- Cilium Operator configuration
+operator:
+  replicas: 1
+  resources:
+    limits:
+      cpu: 500m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# -- Agent configuration
+resources:
+  limits:
+    cpu: 200m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+# -- Node Init configuration
+# Required when nodes don't have the agent-not-ready taint pre-applied
+nodeInit:
+  enabled: true
+
+# -- Agent Not Ready Taint configuration
+# Since cluster nodes are NOT pre-tainted with node.cilium.io/agent-not-ready,
+# we need these settings to prevent scheduling issues during Cilium rollout
+agentNotReadyTaintKey: "node.cilium.io/agent-not-ready"
+
+# -- Tolerate all taints to ensure Cilium agent can run on all nodes
+
+# -- Prioritize Cilium agent scheduling
+priorityClassName: system-node-critical
+
+# -- Kube-proxy replacement
+# Cilium will handle all kube-proxy functions via eBPF
+kubeProxyReplacement: "true"
+
+# -- Kubernetes API server endpoint (required for kube-proxy replacement)
+# Replace with your API server IP and port
+k8sServiceHost: "13.203.87.197"
+k8sServicePort: "6443"
+
+# -- NodePort configuration
+nodePort:
+  enabled: true
+  # Backend selection algorithm: random, maglev
+  algorithm: random
+
+# -- Enable BPF masquerading
+bpf:
+  masquerade: true
+  # -- Enable host routing (more efficient than legacy mode)
+  hostLegacyRouting: false
+
+# -- IPAM configuration
+ipam:
+  # -- Use kubernetes IPAM mode to respect cluster's podSubnet (192.244.0.0/16)
+  # Cilium will use the pod CIDRs assigned by Kubernetes to each node
+  mode: kubernetes
+
+# -- Hubble observability
+hubble:
+  enabled: true
+  relay:
+    enabled: true
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+  ui:
+    enabled: true
+    replicas: 1
+    resources:
+      limits:
+        cpu: 200m
+        memory: 256Mi
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+# -- L7 proxy configuration
+l7Proxy: true
+
+# -- Enable bandwidth manager for better performance
+bandwidthManager:
+  enabled: true
+  bbr: false
+
+# -- Endpoint health checking
+endpointHealthChecking:
+  enabled: true
+
+# -- Enable CIDR-based policies
+policyEnforcementMode: default
+
+# -- Cluster configuration
+cluster:
+  name: default
+  id: 0
+
+# -- Kubernetes specific settings
+k8s:
+  requireIPv4PodCIDR: true
+
+# -- Install CNI configuration
+cni:
+  install: true
+  # -- Remove CNI configuration on uninstall
+  uninstall: false
+  # -- CNI chaining mode (none, generic-veth, aws-cni, portmap)
+  chainingMode: none
+  # -- Make Cilium take ownership of /etc/cni/net.d
+  exclusive: true
+
+# -- Enable health checking
+healthChecking: true
+healthPort: 9879
+
+# -- Prometheus metrics
+prometheus:
+  enabled: false
+  # serviceMonitor:
+  #   enabled: false
+
+# -- Security context
+securityContext: {}
+# -- Debug mode (disable in production)
+debug:
+  enabled: false

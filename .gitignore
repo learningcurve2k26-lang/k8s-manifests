@@ -1,0 +1,47 @@
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Kubernetes
+kubeconfig
+*.kubeconfig
+.kube/
+
+# Helm
+charts/
+*.tgz
+Chart.lock
+
+# Kustomize
+.kustomize/
+
+# Secrets - NEVER commit actual secrets
+secrets/
+*.pem
+*.key
+*.crt
+*.csr
+
+# Terraform (if used)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.bak
+*.log
+
+# Build outputs
+output/
+rendered/

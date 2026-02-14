@@ -1,0 +1,64 @@
+# ConfigMap containing Vault policies for AVP
+# These policies define what secrets AVP (argocd-repo-server) can access
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vault-policies
+  namespace: vault
+  labels:
+    app.kubernetes.io/name: vault
+    app.kubernetes.io/component: config
+data:
+  # Policy for ArgoCD Vault Plugin - Read access to secrets
+  argocd-policy.hcl: |
+    # Allow reading secrets from KV v2 secret engine
+    path "secret/data/*" {
+      capabilities = ["read", "list"]
+    }
+    
+    # Allow reading secrets from KV v1 (if used)
+    path "secret/*" {
+      capabilities = ["read", "list"]
+    }
+
+    path "kv2/*" {
+      capabilities = ["read", "list"]
+    }
+    
+  
+  # Admin policy for vault management
+  admin-policy.hcl: |
+    # Full access to secret engine
+    path "secret/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    
+    # Manage auth methods
+    path "auth/*" {
+      capabilities = ["create", "read", "update", "delete", "list", "sudo"]
+    }
+    
+    path "kv2/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+
+    # Manage policies
+    path "sys/policies/acl/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    
+    # List policies
+    path "sys/policies/acl" {
+      capabilities = ["list"]
+    }
+    
+    # Enable secrets engines
+    path "sys/mounts/*" {
+      capabilities = ["create", "read", "update", "delete", "list"]
+    }
+    
+    # Read health
+    path "sys/health" {
+      capabilities = ["read", "sudo"]
+    }

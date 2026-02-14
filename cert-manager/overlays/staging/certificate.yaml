@@ -1,0 +1,19 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kitetsu-tls
+  namespace: cert-manager
+spec:
+  secretName: kitetsu-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  commonName: kitetsu.xyz
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  duration: 4320h
+  renewBefore: 720h
+  dnsNames:
+  - kitetsu.xyz
+  - "*.kitetsu.xyz"  # Wildcard certificate

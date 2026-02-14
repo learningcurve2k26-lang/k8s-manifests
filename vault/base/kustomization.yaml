@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: vault
+
+resources:
+  - namespace.yaml
+  - vault-auth-serviceaccount.yaml
+  - vault-policy-configmap.yaml
+
+helmCharts:
+  - name: vault
+    repo: https://helm.releases.hashicorp.com
+    version: 0.32.0  # Update to desired version
+    releaseName: vault
+    valuesFile: values.yaml
+    includeCRDs: true

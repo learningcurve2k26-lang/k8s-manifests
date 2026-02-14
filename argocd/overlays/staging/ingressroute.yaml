@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: argocd-tls
+  namespace: argocd
+spec:
+  entryPoints:
+  - websecure
+  routes:
+  - kind: Rule
+    match: Host(`argocd.kitetsu.xyz`)
+    services:
+    - name: argocd-server
+      port: 443
+  tls: {}

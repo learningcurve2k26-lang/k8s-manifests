@@ -1,0 +1,179 @@
+# HashiCorp Vault Helm Chart Values
+# Reference: https://github.com/hashicorp/vault-helm
+
+global:
+  enabled: true
+  tlsDisable: true  # Set to false in production with proper TLS
+
+# Injector Configuration - Sidecar for injecting secrets into pods
+# DISABLED: Not needed when using ArgoCD Vault Plugin (AVP)
+# AVP fetches secrets at sync time, not runtime
+# Enable this only if you need runtime secret injection via agent sidecars
+injector:
+  enabled: false
+  # replicas: 1
+  # leaderElector:
+  #   enabled: false
+  # resources:
+  #   requests:
+  #     memory: 64Mi
+  #     cpu: 50m
+  #   limits:
+  #     memory: 128Mi
+  #     cpu: 250m
+
+# Vault Server Configuration
+server:
+  enabled: true
+
+metrics:
+  enabled: true
+  
+  # Development mode - ONLY FOR TESTING
+  # Set to null/remove for production
+  dev:
+    enabled: false
+    devRootToken: "root"  # Only used in dev mode
+  
+  # Image configuration
+  
+  # Update strategy
+  updateStrategyType: "OnDelete"
+  
+  # Resource limits
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 250m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+  
+  # Readiness probe
+  readinessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
+  
+  # Liveness probe
+  livenessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 60
+  
+  # Extra environment variables
+  # Note: TLS env vars removed since tlsDisable=true
+  extraEnvironmentVars: {}
+  
+  # Vault service
+  service:
+    enabled: true
+    type: NodePort
+    port: 8200
+    targetPort: 8200
+    nodePort: 30820
+  
+  # Data storage - using hostPath for persistent Vault data
+  # Alternative: Use local-path-provisioner StorageClass
+  # dataStorage:DISABLED, using hostPath via volumes instead
+  # If you want PVC instead, set enabled: true, add size: 10Gi, 
+  # storageClass: local-path, and remove volumes/volumeMounts below
+  dataStorage:
+    enabled: false
+  # Audit logs will be streamed to external system (Elasticsearch via Logstash)
+  # See post-deployment steps to enable socket audit device
+  auditStorage: 
+    enabled: false
+  
+  # Custom volumes using hostPath (existing disk storage)
+  # Only data volume needed - audit logs stream to external system
+  volumes:
+    - name: vault-data
+      hostPath:
+        path: /opt/vault/data
+        type: DirectoryOrCreate
+    - name: vault-audit
+      hostPath:
+        path: /opt/vault/audit
+        type: DirectoryOrCreate
+  
+  # Mount the hostPath volumes
+  volumeMounts:
+    - name: vault-data
+      mountPath: /vault/data
+    - name: vault-audit
+      mountPath: /vault/audit  # Not used since auditStorage.enabled=false
+  
+  
+  # Standalone mode configuration
+  standalone:
+    enabled: true
+    config: |
+      ui = true
+      
+      listener "tcp" {
+        tls_disable = 1
+        address = "[::]:8200"
+        cluster_address = "[::]:8201"
+        # Enable unauthenticated metrics access
+        telemetry {
+          unauthenticated_metrics_access = true
+        }
+      }
+      
+      storage "file" {
+        path = "/vault/data"
+      }
+      
+      # Telemetry for Prometheus
+      telemetry {
+        prometheus_retention_time = "30s"
+        disable_hostname = true
+      }
+  
+  # High Availability mode configuration (disabled for staging)
+  ha:
+    enabled: false
+    replicas: 3
+    raft:
+      enabled: true
+      setNodeId: true
+      config: |
+        ui = true
+        
+        listener "tcp" {
+          tls_disable = 1
+          address = "[::]:8200"
+          cluster_address = "[::]:8201"
+        }
+        
+        storage "raft" {
+          path = "/vault/data"
+          retry_join {
+            leader_api_addr = "http://vault-0.vault-internal:8200"
+          }
+          retry_join {
+            leader_api_addr = "http://vault-1.vault-internal:8200"
+          }
+          retry_join {
+            leader_api_addr = "http://vault-2.vault-internal:8200"
+          }
+        }
+        
+        service_registration "kubernetes" {}
+
+# Vault UI
+ui:
+  enabled: true
+  serviceType: NodePort
+  serviceNodePort: 30821
+  externalPort: 8200
+
+# CSI Provider - Alternative to injector
+csi:
+  enabled: false
+
+# Server Service Account - Important for Kubernetes Auth
+serverServiceAccount:
+  create: true
+  name: vault
+  annotations: {}
