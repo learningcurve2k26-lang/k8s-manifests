@@ -12,10 +12,11 @@ spec:
   project: default
   
   source:
-    repoURL: https://github.com/sathishkumarg-025/k8s-manifests
+    repoURL: https://github.com/learningcurve2k26-lang/k8s-manifests
     targetRevision: main
     path: cert-manager/overlays/staging
-    kustomize: {}
+    plugin:
+      name: argocd-vault-plugin-kustomize-helm
 
   destination:
     server: https://kubernetes.default.svc
@@ -23,22 +24,10 @@ spec:
 
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: false
+      selfHeal: false
       allowEmpty: false
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
-    retry:
-      limit: 5
-      backoff:
-        duration: 5s
-        factor: 2
-        maxDuration: 3m
-  
-  # CRDs must be applied before other resources
-  ignoreDifferences:
-    - group: apiextensions.k8s.io
-      kind: CustomResourceDefinition
-      jqPathExpressions:
-        - .spec.conversion.webhook.clientConfig.caBundle
+

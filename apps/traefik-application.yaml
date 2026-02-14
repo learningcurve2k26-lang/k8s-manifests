@@ -9,13 +9,13 @@ spec:
   project: default
   
   source:
-    repoURL: https://github.com/YOUR-USERNAME/k8s-manifests  # Update with your repo URL
+    repoURL: https://github.com/learningcurve2k26-lang/k8s-manifests  # Update with your repo URL
     targetRevision: main  # or master, depending on your default branch
     path: traefik
+    plugin:
+      name: argocd-vault-plugin-kustomize-helm
     
     # Enable Kustomize with Helm support
-    kustomize:
-      version: v5.0.0
 
   destination:
     server: https://kubernetes.default.svc
@@ -23,15 +23,9 @@ spec:
 
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: false
+      selfHeal: false
       allowEmpty: false
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
-    retry:
-      limit: 5
-      backoff:
-        duration: 5s
-        factor: 2
-        maxDuration: 3m
