@@ -4,8 +4,7 @@ kind: Kustomization
 namespace: cert-manager
 
 resources:
-  - ../../base/namespace.yaml
-  - ../../base/cloudflare-secret.yaml
+  - ../../base/
   - clusterissuer.yaml
   - certificate.yaml
 
