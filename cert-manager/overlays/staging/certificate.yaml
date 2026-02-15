@@ -12,8 +12,8 @@ spec:
   privateKey:
     algorithm: ECDSA
     size: 256
-  duration: 4320h
-  renewBefore: 720h
+  duration: 2160h  # 90 days (Let's Encrypt max)
+  renewBefore: 720h  # 30 days
   dnsNames:
   - kitetsu.xyz
   - "*.kitetsu.xyz"  # Wildcard certificate
