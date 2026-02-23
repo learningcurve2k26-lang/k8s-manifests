@@ -1,0 +1,248 @@
+# ArgoCD Helm Values
+# Reference: https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd
+
+# -- Controller configuration
+controller:
+  replicas: 1
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# -- Server configuration
+server:
+  replicas: 1
+  
+  # -- Service configuration
+  service:
+    type: NodePort
+    nodePortHttp: 30180
+    nodePortHttps: 30543
+  
+  # -- Enable insecure mode (disable TLS) for internal traffic
+  extraArgs:
+    - --insecure
+  
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  
+  # -- Ingress configuration
+  ingress:
+    enabled: false
+    # ingressClassName: nginx
+    # hosts:
+    #   - argocd.example.com
+    # tls:
+    #   - secretName: argocd-tls
+    #     hosts:
+    #       - argocd.example.com
+
+# -- Repo server configuration
+repoServer:
+  replicas: 1
+  
+  # -- Automount service account token (required for Vault Kubernetes auth)
+  automountServiceAccountToken: true
+  
+  resources:
+    limits:
+      cpu: 200m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  
+  # -- Additional environment variables
+  env:
+    - name: AVP_VERSION
+      value: "1.18.1"
+  
+  # -- Load AVP credentials and proxy config
+  # envFrom:
+  #   - secretRef:
+  #       name: argocd-vault-plugin-credentials
+  
+  # -- Init containers to download argocd-vault-plugin
+  initContainers:
+    - name: download-avp
+      image: registry.access.redhat.com/ubi8/ubi:latest
+      command: [sh, -c]
+      args:
+        - |
+          curl -L https://github.com/argoproj-labs/argocd-vault-plugin/releases/download/v${AVP_VERSION}/argocd-vault-plugin_${AVP_VERSION}_linux_amd64 -o argocd-vault-plugin &&
+          chmod +x argocd-vault-plugin &&
+          mv argocd-vault-plugin /custom-tools/
+      env:
+        - name: AVP_VERSION
+          value: "1.18.1"
+      volumeMounts:
+        - name: custom-tools
+          mountPath: /custom-tools
+  
+  # -- Mount proxy CA certificate and custom tools
+  volumes:
+    - name: custom-tools
+      emptyDir: {}
+    - name: cmp-plugin
+      configMap:
+        name: argocd-cmp-cm
+    - name: cmp-tmp
+      emptyDir: {}
+  
+  volumeMounts:
+    - name: custom-tools
+      mountPath: /usr/local/bin/argocd-vault-plugin
+      subPath: argocd-vault-plugin
+  
+  # -- CMP Sidecar container for AVP
+  extraContainers:
+    - name: avp
+      command: [/var/run/argocd/argocd-cmp-server]
+      image: quay.io/argoproj/argocd
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+      # envFrom:
+      #   - secretRef:
+      #       name: argocd-vault-plugin-credentials
+      volumeMounts:
+        - name: var-files
+          mountPath: /var/run/argocd
+        - name: plugins
+          mountPath: /home/argocd/cmp-server/plugins
+        - name: cmp-tmp
+          mountPath: /tmp
+        - name: cmp-plugin
+          mountPath: /home/argocd/cmp-server/config/plugin.yaml
+          subPath: avp.yaml
+        - name: custom-tools
+          mountPath: /usr/local/bin/argocd-vault-plugin
+          subPath: argocd-vault-plugin
+    - name: avp-helm
+      command: [/var/run/argocd/argocd-cmp-server]
+      image: quay.io/argoproj/argocd
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+      # envFrom:
+      #   - secretRef:
+      #       name: argocd-vault-plugin-credentials
+      volumeMounts:
+        - name: var-files
+          mountPath: /var/run/argocd
+        - name: plugins
+          mountPath: /home/argocd/cmp-server/plugins
+        - name: cmp-tmp
+          mountPath: /tmp
+        - name: cmp-plugin
+          mountPath: /home/argocd/cmp-server/config/plugin.yaml
+          subPath: avp-helm.yaml
+        - name: custom-tools
+          mountPath: /usr/local/bin/argocd-vault-plugin
+          subPath: argocd-vault-plugin
+    - name: avp-kustomize
+      command: [/var/run/argocd/argocd-cmp-server]
+      image: quay.io/argoproj/argocd
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+      # envFrom:
+      #   - secretRef:
+      #       name: argocd-vault-plugin-credentials
+      volumeMounts:
+        - name: var-files
+          mountPath: /var/run/argocd
+        - name: plugins
+          mountPath: /home/argocd/cmp-server/plugins
+        - name: cmp-tmp
+          mountPath: /tmp
+        - name: cmp-plugin
+          mountPath: /home/argocd/cmp-server/config/plugin.yaml
+          subPath: avp-kustomize.yaml
+        - name: custom-tools
+          mountPath: /usr/local/bin/argocd-vault-plugin
+          subPath: argocd-vault-plugin
+# -- Application set controller
+applicationSet:
+  enabled: true
+  replicas: 1
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# -- Notifications controller
+notifications:
+  enabled: true
+  resources:
+    limits:
+      cpu: 100m
+      memory: 128Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+# -- Redis configuration (HA)
+redis:
+  enabled: true
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# -- Dex (OIDC provider)
+dex:
+  enabled: false
+
+# -- ArgoCD configurations
+configs:
+  # -- General ArgoCD config
+  cm:
+    # -- Create the ConfigMap
+    create: true
+    # -- Enable exec feature
+    exec.enabled: "true"
+    # -- Enable status badge
+    statusbadge.enabled: "true"
+  
+  # -- RBAC configuration
+  rbac:
+    create: true
+    # -- Default policy for users
+    policy.default: role:readonly
+    # -- CSV containing RBAC policies
+    policy.csv: |
+      p, role:admin, applications, *, */*, allow
+      p, role:admin, clusters, *, *, allow
+      p, role:admin, repositories, *, *, allow
+      p, role:admin, logs, *, *, allow
+      p, role:admin, exec, *, */*, allow
+      g, admin, role:admin
+
+  # -- Secret configuration
+  secret:
+    createSecret: true
+    # -- ArgoCD admin password (bcrypt hashed)
+    # Default: admin (change in production!)
+    # argocdServerAdminPassword: ""
+
+  # -- Repository credentials
+  repositories: {}
+    # private-repo:
+    #   url: https://github.com/private/repo
+    #   password: my-password
+    #   username: my-username

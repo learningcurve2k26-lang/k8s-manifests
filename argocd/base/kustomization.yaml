@@ -5,11 +5,6 @@ namespace: argocd
 
 resources:
   - namespace.yaml
+  - argocd-cmp-cm.yaml
 
-helmCharts:
-  - name: argo-cd
-    repo: https://argoproj.github.io/argo-helm
-    version: 9.4.0  # Update to desired version
-    releaseName: argocd
-    includeCRDs: true
-    valuesFile: values.yaml
+

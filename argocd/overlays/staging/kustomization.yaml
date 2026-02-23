@@ -4,12 +4,12 @@ kind: Kustomization
 namespace: argocd
 
 resources:
-  - namespace.yaml
+  - ../../base
 
 helmCharts:
   - name: argo-cd
     repo: https://argoproj.github.io/argo-helm
-    version: 9.4.0  # Update to desired version
+    version: 9.4.1  # Update to desired version
     releaseName: argocd
     includeCRDs: true
-    valuesFile: values-staging.yaml
+    valuesFile: values.yaml
