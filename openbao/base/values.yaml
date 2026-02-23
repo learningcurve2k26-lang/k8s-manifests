@@ -1,0 +1,116 @@
+# OpenBao Helm Chart Values (Base)
+# Reference: https://github.com/openbao/openbao-helm
+
+global:
+  enabled: true
+  tlsDisable: true  # Set to false in production with proper TLS
+
+# Injector Configuration - Sidecar for injecting secrets into pods
+# DISABLED: Not needed when using ArgoCD Vault Plugin (AVP)
+# AVP fetches secrets at sync time, not runtime
+# Enable this only if you need runtime secret injection via agent sidecars
+injector:
+  enabled: false
+  # replicas: 1
+  # leaderElector:
+  #   enabled: false
+  # resources:
+  #   requests:
+  #     memory: 64Mi
+  #     cpu: 50m
+  #   limits:
+  #     memory: 128Mi
+  #     cpu: 250m
+
+# OpenBao Server Configuration
+server:
+  enabled: true
+  
+  # Development mode - ONLY FOR TESTING
+  # Set to false/remove for production
+  dev:
+    enabled: true
+    devRootToken: "root"  # Only used in dev mode
+  
+  # Image configuration
+  # Uses official OpenBao images
+  
+  # Update strategy
+  updateStrategyType: "OnDelete"
+  
+  # Resource limits
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 250m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+  
+  # Readiness probe
+  readinessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true&sealedcode=204&uninitcode=204"
+  
+  # Liveness probe
+  livenessProbe:
+    enabled: true
+    path: "/v1/sys/health?standbyok=true"
+    initialDelaySeconds: 60
+  
+  # Extra environment variables
+  extraEnvironmentVars: {}
+  
+  # OpenBao service
+  service:
+    enabled: true
+    type: ClusterIP
+    port: 8200
+    targetPort: 8200
+  
+  # Data storage
+  dataStorage:
+    enabled: true
+    size: 10Gi
+    storageClass: null
+  
+  # Audit storage
+  auditStorage:
+    enabled: false
+  
+  # Standalone mode configuration
+  standalone:
+    enabled: false
+    config: |
+      ui = true
+      
+      listener "tcp" {
+        tls_disable = 1
+        address = "[::]:8200"
+        cluster_address = "[::]:8201"
+      }
+      
+      storage "file" {
+        path = "/vault/data"
+      }
+  
+  # High Availability mode configuration
+  ha:
+    enabled: false
+    replicas: 1
+
+# OpenBao UI
+ui:
+  enabled: true
+  serviceType: ClusterIP
+  externalPort: 8200
+
+# CSI Provider - Alternative to injector
+csi:
+  enabled: false
+
+# Server Service Account - Important for Kubernetes Auth
+serverServiceAccount:
+  create: true
+  name: openbao
+  annotations: {}

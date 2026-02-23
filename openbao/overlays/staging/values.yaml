@@ -1,0 +1,111 @@
+# OpenBao Helm Chart Values (Staging)
+# Reference: https://github.com/openbao/openbao-helm
+
+global:
+  enabled: true
+  tlsDisable: true  # Set to false in production with proper TLS
+
+# Injector Configuration - Sidecar for injecting secrets into pods
+# DISABLED: Not needed when using ArgoCD Vault Plugin (AVP)
+# AVP fetches secrets at sync time, not runtime
+# Enable this only if you need runtime secret injection via agent sidecars
+injector:
+  enabled: false
+  # replicas: 1
+  # leaderElector:
+  #   enabled: false
+  # resources:
+  #   requests:
+  #     memory: 64Mi
+  #     cpu: 50m
+  #   limits:
+  #     memory: 128Mi
+  #     cpu: 250m
+
+# OpenBao Server Configuration
+server:
+  enabled: true
+
+  # Metrics configuration
+  metrics:
+    enabled: true
+  
+  # Development mode - ONLY FOR TESTING
+  # Set to false for production
+  dev:
+    enabled: false  # Only used in dev mode
+  
+  # Image configuration
+  # Uses official OpenBao images
+  
+  # Update strategy
+  updateStrategyType: "OnDelete"
+  
+  # Resource limits
+  resources:
+    requests:
+      memory: 256Mi
+      cpu: 250m
+    limits:
+      memory: 512Mi
+      cpu: 500m
+  
+  
+  # Extra environment variables
+  # Note: TLS env vars removed since tlsDisable=true
+  extraEnvironmentVars: {}
+  
+  # OpenBao service
+  service:
+    enabled: true
+  
+  # Data storage - using PVC for persistent OpenBao data
+  dataStorage:
+    enabled: true
+    size: 5Gi
+    storageClass: local-path
+  
+  # Audit logs will be streamed to external system (Elasticsearch via Logstash)
+  # See post-deployment steps to enable socket audit device
+  auditStorage: 
+    enabled: true
+    size: 8Gi
+    storageClass: local-path
+  
+  # Standalone mode configuration
+  standalone:
+    enabled: true
+    config: |
+      ui = true
+      
+      listener "tcp" {
+        tls_disable = 1
+        address = "[::]:8200"
+        cluster_address = "[::]:8201"
+      }
+      
+      storage "file" {
+        path = "/openbao/data"
+      }
+      
+  
+  # High Availability mode configuration (disabled for staging)
+  ha:
+    enabled: false
+
+# OpenBao UI
+ui:
+  enabled: true
+  serviceType: NodePort
+  serviceNodePort: 30823
+  externalPort: 8200
+
+# CSI Provider - Alternative to injector
+csi:
+  enabled: false
+
+# Server Service Account - Important for Kubernetes Auth
+serverServiceAccount:
+  create: true
+  name: openbao
+  annotations: {}
