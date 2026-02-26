@@ -11,7 +11,7 @@ spec:
   source:
     repoURL: https://github.com/learningcurve2k26-lang/k8s-manifests  # Update with your repo URL
     targetRevision: main  # or master, depending on your default branch
-    path: traefik
+    path: traefik/overlays/staging
     plugin:
       name: argocd-vault-plugin-kustomize-helm
     

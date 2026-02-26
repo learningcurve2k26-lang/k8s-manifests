@@ -1,0 +1,87 @@
+image:
+  registry: docker.io
+  repository: traefik
+  pullPolicy: IfNotPresent
+
+commonLabels: {}
+
+deployment:
+  enabled: true
+  kind: DaemonSet
+  revisionHistoryLimit: 10
+
+
+podDisruptionBudget:
+  enabled: false
+  maxUnavailable: null
+  minAvailable: null
+
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+  name: ""
+
+gateway:
+  enabled: false
+
+api:
+  dashboard: true
+  insecure: true
+
+ingressRoute:
+  dashboard:
+    enabled: false
+
+additionalArguments: 
+  - "--log.level=DEBUG"
+  - "--serverstransport.insecureskipverify=true"
+  - "--serverstransport.rootcas=/ssl/cacert.crt"
+  - "--entrypoints.websecure.forwardedheaders.insecure=true"
+  - "--entrypoints.web.forwardedheaders.insecure=true"
+
+logs:
+  access:
+    enabled: true
+    format: json
+    filePath: /var/log/traefik/access.log
+    fields:
+      headers:
+        defaultMode: keep
+        names:
+          X-Forwarded-For: keep
+
+providers:
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: true
+  kubernetesGateway:
+    enabled: true
+
+service:
+  enabled: true
+  single: true
+
+podSecurityPolicy:
+  enabled: false
+
+serviceAccount:
+  name: ""
+
+resources: {}
+podSecurityContext:
+  runAsGroup: 65532
+  runAsNonRoot: true
+  runAsUser: 65532
+  seccompProfile:
+    type: RuntimeDefault
+
+ports:
+  traefik:
+    port: 8080
+  web:
+    port: 8000
+    exposedPort: 8000
+  websecure:
+    port: 8443  
+    exposedPort: 8443
+    nodePort: 32000
