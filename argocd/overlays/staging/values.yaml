@@ -65,10 +65,10 @@ repoServer:
     - name: AVP_VERSION
       value: "1.18.1"
   
-  # -- Load AVP credentials and proxy config
-  # envFrom:
-  #   - secretRef:
-  #       name: argocd-vault-plugin-credentials
+  # -- Load AVP credentials
+  envFrom:
+    - secretRef:
+        name: argocd-vault-plugin-credentials
   
   # -- Init containers to download argocd-vault-plugin
   initContainers:
@@ -87,7 +87,7 @@ repoServer:
         - name: custom-tools
           mountPath: /custom-tools
   
-  # -- Mount proxy CA certificate and custom tools
+  # -- Mount custom tools
   volumes:
     - name: custom-tools
       emptyDir: {}
@@ -110,9 +110,9 @@ repoServer:
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
-      # envFrom:
-      #   - secretRef:
-      #       name: argocd-vault-plugin-credentials
+      envFrom:
+        - secretRef:
+            name: argocd-vault-plugin-credentials
       volumeMounts:
         - name: var-files
           mountPath: /var/run/argocd
@@ -132,9 +132,9 @@ repoServer:
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
-      # envFrom:
-      #   - secretRef:
-      #       name: argocd-vault-plugin-credentials
+      envFrom:
+        - secretRef:
+            name: argocd-vault-plugin-credentials
       volumeMounts:
         - name: var-files
           mountPath: /var/run/argocd
@@ -154,9 +154,9 @@ repoServer:
       securityContext:
         runAsNonRoot: true
         runAsUser: 999
-      # envFrom:
-      #   - secretRef:
-      #       name: argocd-vault-plugin-credentials
+      envFrom:
+        - secretRef:
+            name: argocd-vault-plugin-credentials
       volumeMounts:
         - name: var-files
           mountPath: /var/run/argocd
