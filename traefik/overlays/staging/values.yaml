@@ -60,6 +60,7 @@ providers:
 service:
   enabled: true
   single: true
+  type: NodePort
 
 podSecurityPolicy:
   enabled: false
