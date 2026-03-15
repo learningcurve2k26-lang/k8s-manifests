@@ -6,5 +6,7 @@ namespace: argocd
 resources:
   - namespace.yaml
   - argocd-cmp-cm.yaml
+  - repo-server-auth-delegator.yaml
+  - repo-server-token.yaml
 
 

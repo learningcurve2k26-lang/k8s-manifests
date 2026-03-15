@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-repo-server-secret
+  namespace: argocd
+  annotations:
+    kubernetes.io/service-account.name: argocd-repo-server
+type: kubernetes.io/service-account-token
