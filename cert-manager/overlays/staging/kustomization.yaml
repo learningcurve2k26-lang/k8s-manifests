@@ -7,6 +7,7 @@ resources:
   - ../../base/
   - cluster-issuer.yaml
   - certificate.yaml
+  - reference-grant.yaml
 
 helmCharts:
   - name: cert-manager
