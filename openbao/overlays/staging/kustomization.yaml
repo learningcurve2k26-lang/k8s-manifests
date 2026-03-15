@@ -5,6 +5,7 @@ namespace: openbao
 
 resources:
   - ../../base
+  - httproute.yaml
 
 helmCharts:
   - name: openbao
