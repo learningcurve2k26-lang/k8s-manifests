@@ -8,14 +8,14 @@ spec:
   listeners:
     - name: web
       protocol: HTTP
-      port: 80
+      port: 8000
       hostname: "*.kitetsu.xyz"  # Update with your domain
       allowedRoutes:
         namespaces:
           from: All
     - name: websecure
       protocol: HTTPS
-      port: 443
+      port: 8443
       hostname: "*.kitetsu.xyz"  # Update with your domain
       allowedRoutes:
         namespaces:
@@ -25,10 +25,4 @@ spec:
         certificateRefs:
           - kind: Secret
             name: kitetsu-tls
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: GatewayClass
-metadata:
-  name: traefik
-spec:
-  controllerName: traefik.io/gateway-controller
+            namespace: cert-manager

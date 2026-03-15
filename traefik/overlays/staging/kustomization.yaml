@@ -5,7 +5,7 @@ namespace: traefik
 
 resources:
   - ../../base/
-  - test-secret.yaml
+  - gateway.yaml
 
 helmCharts:
   - name: traefik
