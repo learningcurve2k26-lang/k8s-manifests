@@ -1,25 +1,26 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cert-manager
+  name: eck-operator
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
-    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/name: eck-operator
     app.kubernetes.io/part-of: infrastructure
 spec:
   project: default
+  
   source:
     repoURL: https://github.com/learningcurve2k26-lang/k8s-manifests
     targetRevision: main
-    path: cert-manager/overlays/staging
+    path: elastic-search/overlays/staging
     plugin:
       name: argocd-vault-plugin-kustomize-helm
 
   destination:
     server: https://kubernetes.default.svc
-    namespace: cert-manager
+    namespace: elastic-system
 
   syncPolicy:
     automated:
@@ -28,5 +29,11 @@ spec:
       allowEmpty: false
     syncOptions:
       - CreateNamespace=true
-      - ServerSideApply=true
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
 
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      jsonPointers:
+        - /webhooks/0/clientConfig/caBundle

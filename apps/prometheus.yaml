@@ -1,26 +1,24 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: cert-manager
+  name: prometheus
   namespace: argocd
   finalizers:
     - resources-finalizer.argocd.argoproj.io
   labels:
-    app.kubernetes.io/name: cert-manager
+    app.kubernetes.io/name: prometheus
     app.kubernetes.io/part-of: infrastructure
 spec:
   project: default
   source:
     repoURL: https://github.com/learningcurve2k26-lang/k8s-manifests
     targetRevision: main
-    path: cert-manager/overlays/staging
+    path: prometheus/overlays/staging
     plugin:
       name: argocd-vault-plugin-kustomize-helm
-
   destination:
     server: https://kubernetes.default.svc
-    namespace: cert-manager
-
+    namespace: prometheus
   syncPolicy:
     automated:
       prune: false
