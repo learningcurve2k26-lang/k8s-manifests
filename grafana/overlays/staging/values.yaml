@@ -45,9 +45,9 @@ grafana.ini:
     root_url: "https://grafana.kitetsu.xyz:32000/"
 
 resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
   limits:
     cpu: 200m
-    memory: 512Mi
-  requests:
-    cpu: 150m
     memory: 256Mi
