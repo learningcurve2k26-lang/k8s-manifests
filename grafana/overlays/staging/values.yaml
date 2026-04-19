@@ -1,0 +1,53 @@
+serviceAccount:
+  create: true
+
+rbac:
+  create: true
+
+replicas: 1
+
+autoscaling:
+  enabled: false
+
+testFramework:
+  enabled: false
+
+service:
+  type: ClusterIP
+  port: 3000
+  targetPort: 3000
+
+ingress:
+  enabled: false
+
+route:
+  main:
+    enabled: true
+    apiVersion: gateway.networking.k8s.io/v1
+    kind: HTTPRoute
+    parentRefs:
+      - name: traefik-gateway
+        namespace: traefik
+    hostnames:
+      - "grafana.kitetsu.xyz"
+    matches:
+      - path:
+          type: PathPrefix
+          value: /
+
+persistence:
+  enabled: true
+  storageClassName: "local-path"
+  size: 5Gi
+
+grafana.ini:
+  server:
+    root_url: "https://grafana.kitetsu.xyz:32000/"
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 512Mi
+  requests:
+    cpu: 150m
+    memory: 256Mi
