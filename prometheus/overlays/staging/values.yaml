@@ -1,0 +1,55 @@
+# Prometheus Stack Helm Values - Dev AS
+# Overrides for dev-as environment
+
+server:
+  resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
+    limits:
+      cpu: 300m
+      memory: 512Mi
+  retention: 3d
+  persistentVolume:
+    enabled: true
+    existingClaim: prometheus-server
+  # Configmap name should be prometheus-input-config as defined in prometheus-config.yaml.
+  # This is because it combines the release-name and values.server.configMapOverrideName name to form the configmap name.
+  configMapOverrideName: input-config 
+  extraSecretMounts:
+    - mountPath: /etc/prometheus/web.yml
+      name: prometheus-basic-auth
+      subPath: web.yml
+      secretName: prometheus-basic-auth
+      readOnly: true
+    - mountPath: /etc/prometheus/secrets/password
+      name: prometheus-basic-auth-password
+      subPath: password
+      secretName: prometheus-basic-auth
+      readOnly: true
+  service:
+    servicePort: 9090
+  extraArgs:
+    web.config.file: "/etc/prometheus/web.yml"
+  probeHeaders:
+    - name: "Authorization"
+      value: "Basic cHJvbWV0aGV1czpubV5CQzF3akc5Y2g="
+
+alertmanager:
+  enabled: false
+
+kube-state-metrics:
+  enabled: false
+
+prometheus-node-exporter:
+  enabled: true
+  resources:
+    limits:
+      cpu: 100m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 128Mi
+
+prometheus-pushgateway:
+  enabled: false
