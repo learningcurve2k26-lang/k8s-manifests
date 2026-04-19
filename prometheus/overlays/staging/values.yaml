@@ -15,25 +15,9 @@ server:
     existingClaim: prometheus-server
   # Configmap name should be prometheus-input-config as defined in prometheus-config.yaml.
   # This is because it combines the release-name and values.server.configMapOverrideName name to form the configmap name.
-  configMapOverrideName: input-config 
-  extraSecretMounts:
-    - mountPath: /etc/prometheus/web.yml
-      name: prometheus-basic-auth
-      subPath: web.yml
-      secretName: prometheus-basic-auth
-      readOnly: true
-    - mountPath: /etc/prometheus/secrets/password
-      name: prometheus-basic-auth-password
-      subPath: password
-      secretName: prometheus-basic-auth
-      readOnly: true
+  configMapOverrideName: input-config
   service:
     servicePort: 9090
-  extraArgs:
-    web.config.file: "/etc/prometheus/web.yml"
-  probeHeaders:
-    - name: "Authorization"
-      value: "Basic cHJvbWV0aGV1czpubV5CQzF3akc5Y2g="
 
 alertmanager:
   enabled: false
