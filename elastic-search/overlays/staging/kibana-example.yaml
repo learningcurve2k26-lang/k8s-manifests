@@ -1,0 +1,31 @@
+# Minimal Kibana deployment
+# Apply this after Elasticsearch cluster is running
+
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: kibana
+  namespace: elastic-system
+spec:
+  version: 9.3.2
+  count: 1
+  
+  # Reference to Elasticsearch cluster
+  elasticsearchRef:
+    name: elasticsearch-cluster
+  
+  # Resources for 2 vCPU cluster
+  podTemplate:
+    spec:
+      containers:
+        - name: kibana
+          resources:
+            requests:
+              cpu: 100m
+              memory: 512Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+          env:
+            - name: NODE_OPTIONS
+              value: "--max-old-space-size=900"

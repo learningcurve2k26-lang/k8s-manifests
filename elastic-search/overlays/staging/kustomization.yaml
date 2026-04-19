@@ -5,6 +5,9 @@ namespace: elastic-system
 
 resources:
   - ../../base
+  - elasticsearch-example.yaml
+  - kibana-example.yaml
+  - kibana-httproute.yaml
 
 helmCharts:
   - name: eck-operator

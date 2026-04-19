@@ -1,0 +1,46 @@
+# Minimal Elasticsearch cluster deployment
+# Apply this after the ECK operator is running
+
+apiVersion: elasticsearch.k8s.elastic.co/v1
+kind: Elasticsearch
+metadata:
+  name: elasticsearch-cluster
+  namespace: elastic-system
+spec:
+  version: 9.3.2
+  
+  nodeSets:
+    - name: default
+      count: 1
+      
+      # Pod template with minimal resources for 2 vCPU cluster
+      podTemplate:
+        spec:
+          containers:
+            - name: elasticsearch
+              resources:
+                requests:
+                  cpu: 200m
+                  memory: 1Gi
+                limits:
+                  cpu: 500m
+                  memory: 1Gi
+              env:
+                - name: ES_JAVA_OPTS
+                  value: "-Xms512m -Xmx512m"
+      
+      # Persistent storage
+      volumeClaimTemplates:
+        - metadata:
+            name: elasticsearch-data
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 6Gi
+            storageClassName: local-path
+      
+      # Minimal config
+      config:
+        node.store.allow_mmap: false
