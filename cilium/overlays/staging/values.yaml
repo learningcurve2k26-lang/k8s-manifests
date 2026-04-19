@@ -8,20 +8,20 @@
 operator:
   replicas: 1
   resources:
-    limits:
-      cpu: 500m
-      memory: 256Mi
     requests:
-      cpu: 100m
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
       memory: 128Mi
 
 # -- Agent configuration
 resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
   limits:
     cpu: 200m
-    memory: 512Mi
-  requests:
-    cpu: 100m
     memory: 256Mi
 
 # -- Node Init configuration
@@ -67,30 +67,13 @@ ipam:
   mode: kubernetes
 
 # -- Hubble observability
+# Disabled to save resources on small clusters
 hubble:
-  enabled: true
-  relay:
-    enabled: true
-    resources:
-      limits:
-        cpu: 200m
-        memory: 256Mi
-      requests:
-        cpu: 50m
-        memory: 64Mi
-  ui:
-    enabled: true
-    replicas: 1
-    resources:
-      limits:
-        cpu: 200m
-        memory: 256Mi
-      requests:
-        cpu: 50m
-        memory: 64Mi
+  enabled: false
 
 # -- L7 proxy configuration
-l7Proxy: true
+# Disabled to save resources (Envoy proxy not needed for basic networking)
+l7Proxy: false
 
 # -- Enable bandwidth manager for better performance
 bandwidthManager:
