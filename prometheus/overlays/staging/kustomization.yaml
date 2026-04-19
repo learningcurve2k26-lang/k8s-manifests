@@ -6,7 +6,6 @@ namespace: prometheus
 resources:
   - ../../base
   - prometheus-config.yaml
-  - auth-secret.yaml
   - nodeport-svc.yaml
   - httproute.yaml
 
