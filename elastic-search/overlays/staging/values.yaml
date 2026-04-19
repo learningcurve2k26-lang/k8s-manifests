@@ -1,0 +1,54 @@
+# Staging overlay values for ECK Operator
+
+# Manage namespaces where Elastic resources can be deployed
+# The operator will ONLY watch these namespaces for Elastic CRs (Elasticsearch, Kibana, etc.)
+# Why specify managedNamespaces?
+# - Performance: Avoids watching all namespaces cluster-wide
+# - Security: Limits operator scope and RBAC permissions
+# - Control: Restricts where Elastic resources can be created
+# If omitted, operator watches ALL namespaces (higher resource usage)
+managedNamespaces:
+  - elastic-system  # Where operator and main clusters run
+  - default         # Add other namespaces where you'll deploy Elastic resources
+
+# Resources for staging environment
+resources:
+  limits:
+    cpu: 300m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 150Mi
+
+# Replica count for staging
+replicaCount: 1
+
+# Webhook configuration
+webhook:
+  enabled: true
+  port: 9443
+
+# Metrics and monitoring
+metrics:
+  port: 9090
+
+# Enable debug logging in staging
+logLevel: info
+
+# Pod security settings
+securityContext:
+  runAsNonRoot: true
+
+# Node selector for staging environment (optional)
+# nodeSelector:
+#   environment: staging
+
+# Tolerations (optional)
+# tolerations: []
+
+# Affinity rules (optional)
+# affinity: {}
+
+# Set updateStrategy
+updateStrategy:
+  type: RollingUpdate

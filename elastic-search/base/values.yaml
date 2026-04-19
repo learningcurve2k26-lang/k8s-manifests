@@ -1,0 +1,34 @@
+# Base values for ECK Operator
+# These values will be inherited by all overlays
+
+# Manage the lifecycle of namespaces
+managedNamespaces:
+  - elastic-system
+
+# Resources for the operator
+resources:
+  limits:
+    cpu: 1
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 150Mi
+
+# Pod security settings
+securityContext:
+  runAsNonRoot: true
+
+# Webhook configuration
+webhook:
+  enabled: true
+  port: 9443
+
+# Metrics configuration
+metrics:
+  port: 9090
+
+# High availability
+replicaCount: 1
+
+# Logging
+logLevel: info
