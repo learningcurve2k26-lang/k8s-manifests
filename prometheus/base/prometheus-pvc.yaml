@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/name: prometheus
 spec:
-  storageClassName: prometheus-sc
+  storageClassName: local-path
   accessModes:
     - ReadWriteOnce
   volumeMode: Filesystem

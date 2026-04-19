@@ -5,5 +5,4 @@ namespace: prometheus
 
 resources:
   - namespace.yaml
-  - storageclass.yaml
   - prometheus-pvc.yaml
